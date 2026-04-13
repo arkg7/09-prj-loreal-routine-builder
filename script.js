@@ -3,6 +3,8 @@ const categoryFilter = document.getElementById("categoryFilter");
 const productsContainer = document.getElementById("productsContainer");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
+const selectedProductWindow = document.getElementById("selectedProductsList");
+let selectedProducts = [];
 
 /* Show initial placeholder until user selects a category */
 productsContainer.innerHTML = `
@@ -30,7 +32,7 @@ function displayProducts(products) {
         <p>${product.brand}</p>
       </div>
     </div>
-  `
+  `,
     )
     .join("");
 }
@@ -43,10 +45,72 @@ categoryFilter.addEventListener("change", async (e) => {
   /* filter() creates a new array containing only products 
      where the category matches what the user selected */
   const filteredProducts = products.filter(
-    (product) => product.category === selectedCategory
+    (product) => product.category === selectedCategory,
   );
 
   displayProducts(filteredProducts);
+  for (const card of document.querySelectorAll(".product-card")) {
+    if (
+      selectedProducts.includes(
+        `${card.querySelector("p").textContent} ${card.querySelector("h3").textContent}`,
+      )
+    ) {
+      card.style.border = "2px solid #007BFF"; // Highlight selected products
+      card.style.backgroundColor = "#f0f8ff"; // Optional: change background for better visibility
+    }
+  }
+});
+
+/* Click listener for product cards to selecte products */
+productsContainer.addEventListener("click", (e) => {
+  const productCard = e.target.closest(".product-card");
+  if (
+    !selectedProducts.includes(
+      `${productCard.querySelector("p").textContent} ${productCard.querySelector("h3").textContent}`,
+    )
+  ) {
+    const productName = productCard.querySelector("h3").textContent;
+    const productBrand = productCard.querySelector("p").textContent;
+    const productImage = productCard.querySelector("img").src;
+
+    productCard.style.border = "2px solid #007BFF"; // Highlight selected product
+    productCard.style.backgroundColor = "#f0f8ff"; // Optional: change background for better visibility
+
+    /* Create a new list item for the selected product */
+    const listItem = `
+    <div class="selected product-card">
+      <img src="${productImage}" alt="${productName}">
+      <div class="product-info">
+        <h3>${productName}</h3>
+        <p>${productBrand}</p>
+      </div>
+    </div>
+    `;
+    selectedProductWindow.insertAdjacentHTML("beforeend", listItem);
+    selectedProducts.push(`${productBrand} ${productName}`);
+  } else {
+    productCard.style.border = "1px solid #ccc"; // Remove highlight
+    productCard.style.backgroundColor = ""; // Reset background color
+
+    /* Remove the product from the selected products list */
+    selectedProducts = selectedProducts.filter(
+      (product) =>
+        product !==
+        `${productCard.querySelector("p").textContent} ${productCard.querySelector("h3").textContent}`,
+    );
+    const listItems =
+      selectedProductWindow.querySelectorAll("div.product-card");
+    listItems.forEach((item) => {
+      if (
+        item.querySelector("h3").textContent ===
+          productCard.querySelector("h3").textContent &&
+        item.querySelector("p").textContent ===
+          productCard.querySelector("p").textContent
+      ) {
+        selectedProductWindow.removeChild(item);
+      }
+    });
+  }
 });
 
 /* Chat form submission handler - placeholder for OpenAI integration */
