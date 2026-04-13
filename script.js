@@ -4,6 +4,8 @@ const productsContainer = document.getElementById("productsContainer");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
 const selectedProductWindow = document.getElementById("selectedProductsList");
+const generateRoutineButton = document.getElementById("generateRoutine");
+const workerURL = "https://mute-hill-84d7.archergames7.workers.dev/";
 let selectedProducts = [];
 
 /* Show initial placeholder until user selects a category */
@@ -113,9 +115,97 @@ productsContainer.addEventListener("click", (e) => {
   }
 });
 
+/* Generate routine button click handler - placeholder for future functionality */
+generateRoutineButton.addEventListener("click", () => {
+  chatWindow.innerHTML = "Connecting to the OpenAI API for a response!";
+
+  prompt =
+    "You are a helpful assistant that helps users with personalized routines. Only mention selected L’Oréal products and services in your responses. Always ask follow-up questions to better understand the user’s needs and preferences, and provide detailed, informative answers that highlight the unique features and benefits of L’Oréal’s offerings. Be friendly, engaging, and professional in your tone. If the user asks a question that is not related to L’Oréal products or services, politely steer the conversation back to topics related to L’Oréal and do not provide information on unrelated topics.";
+
+  productsList = selectedProducts.map((product) => `- ${product}`).join("\n");
+  prompt += `\n\nThe user has selected the following products:\n${productsList}`;
+
+  try {
+    fetch(workerURL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: "user",
+            content: userInput.value,
+          },
+          {
+            role: "system",
+            content: prompt,
+          },
+        ],
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        let message = `<li>L’Oréal Assistant: ${data.choices[0].message.content}</li>`;
+        chatWindow.innerHTML = message;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        chatWindow.textContent =
+          "An error occurred while fetching the response.";
+      });
+  } catch (error) {
+    console.error("Error:", error);
+    chatWindow.textContent = "An error occurred while fetching the response.";
+  }
+});
+
 /* Chat form submission handler - placeholder for OpenAI integration */
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
-  chatWindow.innerHTML = "Connect to the OpenAI API for a response!";
+  prompt =
+    "You are a helpful assistant that helps users discover and understand L’Oréal’s extensive range of products—makeup, skincare, haircare, and fragrances—as well as provide personalized routines and recommendations. Only mention L’Oréal products and services in your responses. If you don’t know the answer, say you don’t know. Always ask follow-up questions to better understand the user’s needs and preferences, and provide detailed, informative answers that highlight the unique features and benefits of L’Oréal’s offerings. Be friendly, engaging, and professional in your tone. If the user asks a question that is not related to L’Oréal products or services, politely steer the conversation back to topics related to L’Oréal and do not provide information on unrelated topics.";
+
+  productsList = selectedProducts.map((product) => `- ${product}`).join("\n");
+  prompt += `\n\nThe user has selected the following products:\n${productsList}`;
+  prompt += `\n\nThis is the chat history: ${chatWindow.textContent}`;
+  userMessage = document.createElement("li");
+  userMessage.textContent = `You: ${userInput.value}`;
+  chatWindow.appendChild(userMessage);
+
+  try {
+    fetch(workerURL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: "user",
+            content: userInput.value,
+          },
+          {
+            role: "system",
+            content: prompt,
+          },
+        ],
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        assistantMessage = document.createElement("li");
+        assistantMessage.textContent = `L’Oréal Assistant: ${data.choices[0].message.content}`;
+        chatWindow.appendChild(assistantMessage);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        chatWindow.textContent =
+          "An error occurred while fetching the response.";
+      });
+  } catch (error) {
+    console.error("Error:", error);
+    chatWindow.textContent = "An error occurred while fetching the response.";
+  }
 });
