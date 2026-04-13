@@ -193,8 +193,8 @@ body {
 }
 
 .selected {
-  border: 2px solid #007bff;
-  background-color: #f0f8ff;
+  border: 2px solid #e3a535;
+  background-color: #fff8f0;
 }
 
 .product-card img {

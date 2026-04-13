@@ -82,8 +82,8 @@ categoryFilter.addEventListener("change", async (e) => {
           product.brand === card.querySelector("p").textContent,
       )
     ) {
-      card.style.border = "2px solid #007BFF"; // Highlight selected products
-      card.style.backgroundColor = "#f0f8ff"; // Optional: change background for better visibility
+      card.style.border = "2px solid #e3a535"; // Highlight selected products
+      card.style.backgroundColor = "#fff8f0"; // Optional: change background for better visibility
     }
   }
 });
@@ -102,8 +102,8 @@ productsContainer.addEventListener("click", (e) => {
     const productBrand = productCard.querySelector("p").textContent;
     const productImage = productCard.querySelector("img").src;
 
-    productCard.style.border = "2px solid #007BFF"; // Highlight selected product
-    productCard.style.backgroundColor = "#f0f8ff"; // Optional: change background for better visibility
+    productCard.style.border = "2px solid #e3a535"; // Highlight selected product
+    productCard.style.backgroundColor = "#fff8f0"; // Optional: change background for better visibility
 
     /* Create a new list item for the selected product */
     const listItem = `
