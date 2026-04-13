@@ -6,7 +6,8 @@ const chatWindow = document.getElementById("chatWindow");
 const selectedProductWindow = document.getElementById("selectedProductsList");
 const generateRoutineButton = document.getElementById("generateRoutine");
 const workerURL = "https://mute-hill-84d7.archergames7.workers.dev/";
-let selectedProducts = [];
+let selectedProducts =
+  JSON.parse(localStorage.getItem("selectedProducts")) || [];
 
 /* Show initial placeholder until user selects a category */
 productsContainer.innerHTML = `
@@ -39,6 +40,28 @@ function displayProducts(products) {
     .join("");
 }
 
+function loadSelectedProducts() {
+  if (selectedProducts.length > 0) {
+    selectedProducts.forEach((product) => {
+      const listItem = `
+        <div class="selected product-card">
+          <img src="${product.image}" alt="${product.name}">
+          <div class="product-info">
+            <h3>${product.name}</h3>
+            <p>${product.brand}</p>
+          </div>
+        </div>
+      `;
+      selectedProductWindow.insertAdjacentHTML("beforeend", listItem);
+    });
+  }
+}
+
+/* Load selected products from localStorage on page load */
+window.addEventListener("load", () => {
+  loadSelectedProducts();
+});
+
 /* Filter and display products when category changes */
 categoryFilter.addEventListener("change", async (e) => {
   const products = await loadProducts();
@@ -53,8 +76,10 @@ categoryFilter.addEventListener("change", async (e) => {
   displayProducts(filteredProducts);
   for (const card of document.querySelectorAll(".product-card")) {
     if (
-      selectedProducts.includes(
-        `${card.querySelector("p").textContent} ${card.querySelector("h3").textContent}`,
+      selectedProducts.find(
+        (product) =>
+          product.name === card.querySelector("h3").textContent &&
+          product.brand === card.querySelector("p").textContent,
       )
     ) {
       card.style.border = "2px solid #007BFF"; // Highlight selected products
@@ -67,8 +92,10 @@ categoryFilter.addEventListener("change", async (e) => {
 productsContainer.addEventListener("click", (e) => {
   const productCard = e.target.closest(".product-card");
   if (
-    !selectedProducts.includes(
-      `${productCard.querySelector("p").textContent} ${productCard.querySelector("h3").textContent}`,
+    !selectedProducts.find(
+      (product) =>
+        product.name === productCard.querySelector("h3").textContent &&
+        product.brand === productCard.querySelector("p").textContent,
     )
   ) {
     const productName = productCard.querySelector("h3").textContent;
@@ -89,7 +116,11 @@ productsContainer.addEventListener("click", (e) => {
     </div>
     `;
     selectedProductWindow.insertAdjacentHTML("beforeend", listItem);
-    selectedProducts.push(`${productBrand} ${productName}`);
+    selectedProducts.push({
+      name: productName,
+      brand: productBrand,
+      image: productImage,
+    });
   } else {
     productCard.style.border = "1px solid #ccc"; // Remove highlight
     productCard.style.backgroundColor = ""; // Reset background color
@@ -97,8 +128,8 @@ productsContainer.addEventListener("click", (e) => {
     /* Remove the product from the selected products list */
     selectedProducts = selectedProducts.filter(
       (product) =>
-        product !==
-        `${productCard.querySelector("p").textContent} ${productCard.querySelector("h3").textContent}`,
+        product.name !== productCard.querySelector("h3").textContent ||
+        product.brand !== productCard.querySelector("p").textContent,
     );
     const listItems =
       selectedProductWindow.querySelectorAll("div.product-card");
@@ -113,6 +144,60 @@ productsContainer.addEventListener("click", (e) => {
       }
     });
   }
+  let storeProducts = Array.from(
+    selectedProductWindow.querySelectorAll("div.product-card"),
+  ).map((item) => ({
+    name: item.querySelector("h3").textContent,
+    brand: item.querySelector("p").textContent,
+    image: item.querySelector("img").src,
+  }));
+  localStorage.setItem("selectedProducts", JSON.stringify(storeProducts));
+});
+
+/* Remove Selected Product from selected products list */
+selectedProductWindow.addEventListener("click", (e) => {
+  const productCard = e.target.closest(".product-card");
+  if (productCard) {
+    const productName = productCard.querySelector("h3").textContent;
+    const productBrand = productCard.querySelector("p").textContent;
+
+    /* Remove the product from the selected products list */
+    selectedProducts = selectedProducts.filter(
+      (product) =>
+        product.name !== productName || product.brand !== productBrand,
+    );
+    const listItems =
+      selectedProductWindow.querySelectorAll("div.product-card");
+    listItems.forEach((item) => {
+      if (
+        item.querySelector("h3").textContent === productName &&
+        item.querySelector("p").textContent === productBrand
+      ) {
+        selectedProductWindow.removeChild(item);
+      }
+    });
+
+    /* Also un-highlight the corresponding product card in the main products container */
+    const mainProductCards =
+      productsContainer.querySelectorAll(".product-card");
+    mainProductCards.forEach((card) => {
+      if (
+        card.querySelector("h3").textContent === productName &&
+        card.querySelector("p").textContent === productBrand
+      ) {
+        card.style.border = "1px solid #ccc"; // Remove highlight
+        card.style.backgroundColor = ""; // Reset background color
+      }
+    });
+  }
+  let storeProducts = Array.from(
+    selectedProductWindow.querySelectorAll("div.product-card"),
+  ).map((item) => ({
+    name: item.querySelector("h3").textContent,
+    brand: item.querySelector("p").textContent,
+    image: item.querySelector("img").src,
+  }));
+  localStorage.setItem("selectedProducts", JSON.stringify(storeProducts));
 });
 
 /* Generate routine button click handler - placeholder for future functionality */

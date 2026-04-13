@@ -186,6 +186,10 @@ body {
   display: flex;
   gap: 15px;
   min-height: 160px;
+  cursor: pointer;
+  transition:
+    border-color 0.3s,
+    background-color 0.3s;
 }
 
 .selected {
